@@ -15,10 +15,10 @@ import Cookies from "js-cookie";
 export function AppSidebar({ ...props }) {
   const [user, setUser] = React.useState({});
   // This is sample data.
-  React.useEffect(() => {
-    const cookieUser = Cookies.get("userInfo");
-    setUser(JSON.parse(cookieUser));
-  }, []);
+  // React.useEffect(() => {
+  //   const cookieUser = Cookies.get("userInfo");
+  //   setUser(JSON.parse(cookieUser));
+  // }, []);
   const data = {
     user: {
       name: user.username,

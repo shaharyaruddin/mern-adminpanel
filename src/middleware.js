@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 
 export function middleware(req) {
   const token = req.cookies.get('authToken');
-  // console.log(token.value);
+  // // console.log(token.value);
   
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+  // if (!token) {
+  //   return NextResponse.redirect(new URL('/login', req.url));
+  // }
 
-  return NextResponse.next();
+  // return NextResponse.next();
 }
 
 export const config = {
