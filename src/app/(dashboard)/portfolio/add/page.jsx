@@ -16,12 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { fetchReducer } from "@/app/(api-response)/reducer/FetchReducer";
 import { FETCH_INITIAL_STATE } from "@/app/(api-response)/states/FetchInitialState";
@@ -29,8 +24,10 @@ import { FETCH_ACTION_STATE } from "@/app/(api-response)/states/FetchActionState
 import { addCategory } from "../../../../../constraint/api/auth.route";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Category name is required"),
+  name: z.string().min(1, "Title is required"),
+  category: z.string().min(1, "Category is required"),
   description: z.string().min(5, "Description is required"),
+  image: z.any().optional(), // handle file separately
 });
 
 const AddCategory = () => {
@@ -42,42 +39,33 @@ const AddCategory = () => {
     mode: "onChange",
     defaultValues: {
       name: "",
+      category: "",
       description: "",
+      image: null,
     },
   });
 
-
-  async function onSubmit(values, event) {
-    event.preventDefault(); // Prevent default submission
-    dispatch({ type: FETCH_ACTION_STATE.FETCH_START });
-    toast.info("Creating category...", { id: "creating-category" });
+  async function onSubmit(values) {
     try {
-      const { data } = await axios.post(addCategory, values, { timeout: 5000 });
-      dispatch({ type: FETCH_ACTION_STATE.FETCH_SUCCESS, payload: data });
-      toast.success("Category created successfully!");
-      toast.dismiss("creating-category");
-      form.reset();
-      router.push("/categories");
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("category", values.category);
+      formData.append("description", values.description);
+      formData.append("image", values.image);
+      const response = await axios.post(
+        "http://localhost:1000/portfolio/addportfolio",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("check response>>>", response);
     } catch (error) {
-      console.error("Error creating category:", {
-        message: error,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-      dispatch({ type: FETCH_ACTION_STATE.FETCH_ERROR });
-      let errorMessage = "Failed to create category.";
-      if (error.code === "ECONNABORTED") {
-        errorMessage = "Request timed out. Please try again.";
-      } else if (error.response?.status === 400) {
-        errorMessage = error.response?.data?.message || "Invalid input data.";
-      } else if (error.response?.status >= 500) {
-        errorMessage = "Server error. Please try again later.";
-      }
-      toast.error(errorMessage);
-      toast.dismiss("creating-category");
-    } finally {
-      dispatch({ type: FETCH_ACTION_STATE.FETCH_COMPLETE });
+      console.log("error while adding portfolio", error);
     }
+    console.log(">>>>>>>>>>>>>>>> full values", values);
   }
 
   const isLoading = !state.LOADING;
@@ -86,18 +74,20 @@ const AddCategory = () => {
     <div className="max-w-3xl mx-auto py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Add New Category</CardTitle>
+          <CardTitle>Add Portfolio</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((values, event) => onSubmit(values, event))}
+              onSubmit={form.handleSubmit((values, event) =>
+                onSubmit(values, event)
+              )}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault(); // Prevent Enter key submission
+                  e.preventDefault();
                 }
               }}
-              className="space-y-8"
+              className="space-y-6"
               autoComplete="off"
             >
               <FormField
@@ -105,21 +95,41 @@ const AddCategory = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category Name</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter category name"
+                        placeholder="Enter title"
                         type="text"
-                        aria-describedby="name-error"
                         {...field}
                         disabled={isLoading}
                         autoComplete="off"
                       />
                     </FormControl>
-                    <FormMessage id="name-error" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter category"
+                        type="text"
+                        {...field}
+                        disabled={isLoading}
+                        autoComplete="off"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="description"
@@ -139,21 +149,39 @@ const AddCategory = () => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="flex gap-2">
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      Processing...
-                    </>
-                  ) : (
-                    "Add Category"
-                  )}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="cursor-pointer"
+                >
+                  {isLoading ? <>Processing...</> : "Add Portfolio"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/categories")}
+                  onClick={() => router.push("/portfolio")}
                   disabled={isLoading}
+                  className="cursor-pointer"
                 >
                   Cancel
                 </Button>
