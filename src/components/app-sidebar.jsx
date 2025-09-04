@@ -10,15 +10,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Book, Gauge, SquareKanban, Tag, Users } from "lucide-react";
-import Cookies from "js-cookie";
 
 export function AppSidebar({ ...props }) {
   const [user, setUser] = React.useState({});
-  // This is sample data.
-  // React.useEffect(() => {
-  //   const cookieUser = Cookies.get("userInfo");
-  //   setUser(JSON.parse(cookieUser));
-  // }, []);
+
   const data = {
     user: {
       name: user.username,
@@ -42,11 +37,11 @@ export function AppSidebar({ ...props }) {
         items: [
           {
             title: "Blogs",
-            url: "/tools",
+            url: "/blogs",
           },
           {
-            title: "Add Tools",
-            url: "/tools/add",
+            title: "Add Blogs",
+            url: "/blogs/add",
           },
         ],
       },
@@ -58,12 +53,12 @@ export function AppSidebar({ ...props }) {
         isActive: false,
         items: [
           {
-            title: "Cateogories",
-            url: "/categories",
+            title: "Portfolios",
+            url: "/portfolio",
           },
           {
-            title: "Add Cateogories",
-            url: "/categories/add",
+            title: "Add Portfolios",
+            url: "/portfolio/add",
           },
         ],
       },
@@ -75,7 +70,7 @@ export function AppSidebar({ ...props }) {
       <SidebarHeader>
         <div className="w-full flex justify-center items-center mt-3">
           <span className="group-data-[state=collapsed]:hidden">
-            Freemium Admin
+            Visualize Solution Admin
           </span>
           <span className="hidden group-data-[state=collapsed]:inline">F</span>
         </div>

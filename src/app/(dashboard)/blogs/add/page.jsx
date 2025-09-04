@@ -15,11 +15,10 @@ import { Label } from "@/components/ui/label";
 
 import clsx from "clsx";
 
-
 const AddTool = () => {
   return (
     <div className={clsx("p-4 rounded-xl border", "w-full min-w-[300px]")}>
-      <h3 className="font-medium capitalize text-xl mb-4">Add Tool</h3>
+      <h3 className="font-medium capitalize text-xl mb-4">Add Blogs</h3>
       <form className="space-y-4">
         <div>
           <Label htmlFor="name">Name *</Label>
@@ -137,9 +136,7 @@ const AddTool = () => {
           <Label htmlFor="background_image">Background Image *</Label>
           <Input id="background_image" type="file" accept="image/*" required />
         </div>
-        <Button type="submit">
-test
-        </Button>
+        <Button type="submit">Submit</Button>
       </form>
     </div>
   );
