@@ -21,7 +21,7 @@ export const getCategories = baseUri + '/categories';
 export const addCategory = getCategories + '/add';
 
 export const getTools = baseUri + '/tools'
-export const addTool = getTools + '/add'
+export const addBlogs = getTools + '/add'
 export const getToolByid = getTools + '/edit'
 
 export const getPricingPlan = baseUri + '/pricing-plans'

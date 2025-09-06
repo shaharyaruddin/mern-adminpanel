@@ -20,8 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { fetchReducer } from "@/app/(api-response)/reducer/FetchReducer";
 import { FETCH_INITIAL_STATE } from "@/app/(api-response)/states/FetchInitialState";
-import { FETCH_ACTION_STATE } from "@/app/(api-response)/states/FetchActionState";
-import { addCategory } from "../../../../../constraint/api/auth.route";
 
 const formSchema = z.object({
   name: z.string().min(1, "Title is required"),
