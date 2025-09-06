@@ -9,27 +9,20 @@ import {
 } from "./ui/card";
 import { Layers2, LayoutGrid, User } from "lucide-react";
 
-const DashboardCards = ({
-  customerCount = 30,
-  toolCount = 20,
-  categoryCount = 30,
-}) => {
+const DashboardCards = ({ blogsCount, portfolioCount, categoryCount }) => {
   const DASHBOARD_CARDS = [
     {
-      heading: "total customers",
-      description: "total customer or all time",
-      count: customerCount,
+      heading: "total Blogs",
+      count: blogsCount,
       icon: <User />,
     },
     {
-      heading: "total tool",
-      description: "total toll or all time",
-      count: toolCount,
+      heading: "total Portfolios",
+      count: portfolioCount,
       icon: <LayoutGrid />,
     },
     {
-      heading: "total tool categories",
-      description: "total toll or all time",
+      heading: "total categories",
       count: categoryCount,
       icon: <Layers2 />,
     },
@@ -47,11 +40,6 @@ const DashboardCards = ({
               </CardTitle>
               <CardAction>{item.icon}</CardAction>
             </CardHeader>
-            <CardFooter className="flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium capitalize">
-                {item.description}
-              </div>
-            </CardFooter>
           </Card>
         );
       })}
