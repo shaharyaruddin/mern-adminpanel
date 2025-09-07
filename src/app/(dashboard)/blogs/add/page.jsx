@@ -1,11 +1,10 @@
 "use client";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-
 import {
   Form,
   FormControl,
@@ -19,9 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchReducer } from "@/app/(api-response)/reducer/FetchReducer";
-import { FETCH_INITIAL_STATE } from "@/app/(api-response)/states/FetchInitialState";
-
 import {
   Select,
   SelectContent,
@@ -29,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -44,10 +39,11 @@ const formSchema = z.object({
 
 const AddBlogs = () => {
   const router = useRouter();
-  const [state] = useReducer(fetchReducer, FETCH_INITIAL_STATE);
-  const [categories, setCategories] = useState([]);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const [categories, setCategories] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -62,86 +58,103 @@ const AddBlogs = () => {
     },
   });
 
-  // ✅ Fetch categories
+  // Fetch categories
   useEffect(() => {
     async function fetchCategories() {
       try {
+        setIsLoading(true);
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_BASE_URI}/category`
         );
         setCategories(response.data.allCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
+        toast.error("Failed to fetch categories");
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchCategories();
   }, []);
 
-  // ✅ Autofill blog data if id exists
+  // Fetch all blogs for autofill when id is present
   useEffect(() => {
-    async function fetchBlogData() {
+    async function fetchBlogsList() {
       if (id) {
-        console.log("Editing blog with id:", id);
         try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_BASE_URI}/blogs`
-          );
-
-          const blog = response.data.allBlogs.find((item) => item._id == id);
-          console.log("Fetched blog for autofill >>>", blog);
-
-          if (blog) {
-            form.reset({
-              title: blog.title || "",
-              categoryName: blog.categoryName || "",
-              publishedDate: blog.publishedDate || "",
-              description: blog.description || "",
-              long_description: blog.long_description || "",
-              image: null, // re-upload karna hoga
-            });
-          }
+          setIsLoading(true);
+          const response = await axios.get("http://localhost:1000/blogs");
+          setBlogs(response.data.AllBlogs);
+          // console.log(response.data.AllBlogs, "blogs---------------");
         } catch (error) {
-          console.error("Error fetching blog for update:", error);
+          console.error("Error fetching blogs:", error);
+          toast.error("Failed to fetch blog data");
+        } finally {
+          setIsLoading(false);
         }
       }
     }
-    fetchBlogData();
-  }, [id, form]);
+    fetchBlogsList();
+  }, [id]);
 
-  // ✅ Handle submit
-  async function onSubmit(values) {
-    try {
-      const formData = new FormData();
-      formData.append("title", values.title);
-      formData.append("categoryName", values.categoryName);
-      formData.append("publishedDate", values.publishedDate);
-      formData.append("description", values.description);
-      formData.append("long_description", values.long_description);
-      if (values.image) formData.append("image", values.image);
-      if (id) formData.append("_id", id);
-
-      if (id) {
-        await axios.put(
-          `${process.env.NEXT_PUBLIC_API_BASE_URI}/blogs/update`,
-          formData
-        );
-        toast.success("Blog updated successfully!");
-        router.push("/blogs");
-      } else {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URI}/blogs/add`,
-          formData
-        );
-        toast.success("Blog added successfully!");
-        router.push("/blogs");
-      }
-    } catch (error) {
-      console.error("Error while adding/updating blog", error);
-      toast.error("Failed to process blog");
+  // Autofill form when blog data is fetched
+  useEffect(() => {
+    const findBlogById = blogs.find((item) => item?._id === id);
+    if (findBlogById) {
+      form.reset({
+        title: findBlogById.title || "",
+        categoryName: findBlogById?.categoryName || "",
+        description: findBlogById.description || "",
+        long_description: findBlogById.long_description || "",
+        image: findBlogById?.image || null, 
+        publishedDate: findBlogById.publishedDate
+          ? new Date(findBlogById.publishedDate).toISOString().split("T")[0]
+          : "",
+      });
     }
-  }
+  }, [blogs, id, form]);
 
-  const isLoading = !state.LOADING;
+  // Handle form submission
+async function onSubmit(values) {
+  try {
+    if (id && !blogs.find((item) => item?._id === id)) {
+      toast.error("Invalid blog ID");
+      return;
+    }
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("categoryName", values.categoryName);
+    formData.append("publishedDate", values.publishedDate);
+    formData.append("description", values.description);
+    formData.append("long_description", values.long_description);
+    if (values.image) formData.append("image", values.image);
+    if (id) formData.append("_id", id);
+
+    // Debug FormData
+    console.log("FormData entries:", [...formData.entries()]);
+
+    if (id) {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_BASE_URI}/blogs/update`,
+        formData
+      );
+      toast.success("Blog updated successfully!");
+    } else {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URI}/blogs/add`,
+        formData
+      );
+      toast.success("Blog added successfully!");
+    }
+    router.push("/blogs");
+  } catch (error) {
+    console.error("Error while adding/updating blog:", error.response?.data || error.message);
+    toast.error(error.response?.data?.message || "Failed to process blog");
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   return (
     <div className="max-w-3xl mx-auto py-10">
@@ -214,7 +227,8 @@ const AddBlogs = () => {
                     <FormLabel>Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value} // 👈 important for autofill
+                      value={field.value}
+                      disabled={isLoading}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -285,6 +299,7 @@ const AddBlogs = () => {
                         accept="image/*"
                         className="cursor-pointer"
                         onChange={(e) => field.onChange(e.target.files?.[0])}
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -295,7 +310,11 @@ const AddBlogs = () => {
               {/* Buttons */}
               <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Processing..." : id ? "Update Blog" : "Add Blog"}
+                  {isLoading
+                    ? "Processing..."
+                    : id
+                    ? "Update Blog"
+                    : "Add Blog"}
                 </Button>
                 <Button
                   type="button"
