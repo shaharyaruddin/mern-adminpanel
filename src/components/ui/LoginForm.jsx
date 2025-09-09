@@ -1,6 +1,7 @@
 "use client";
 
 import axios from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -25,8 +26,8 @@ const LoginForm = () => {
   }, [user]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent page reload
-    setError(""); // reset error
+    e.preventDefault();
+    setError("");
     setLoading(true);
 
     try {
@@ -40,13 +41,10 @@ const LoginForm = () => {
       console.error("error in login form ", err);
 
       if (err.response) {
-        // Server responded with a status other than 2xx
         setError(err.response.data?.message || "Authentication failed");
       } else if (err.request) {
-        // Request made but no response received
         setError("No response from server. Please try again later.");
       } else {
-        // Something else happened
         setError("An unexpected error occurred.");
       }
     } finally {
@@ -55,23 +53,23 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="flex items-center justify-center ">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="flex items-center justify-center min-h-screen ">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         {/* Heading */}
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Login to Your Account
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
+          Login
         </h2>
+        <p className="text-sm text-gray-500 text-center mb-6">
+          Please login to continue
+        </p>
 
-        {/* Error message */}
         {error && (
           <p className="text-red-600 text-sm mb-4 text-center bg-red-50 p-2 rounded-lg">
             {error}
           </p>
         )}
 
-        {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
-          {/* Email */}
           <div>
             <label
               htmlFor="email"
@@ -85,7 +83,7 @@ const LoginForm = () => {
               value={user.email}
               onChange={(e) => setUser({ ...user, email: e.target.value })}
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition"
               required
             />
           </div>
@@ -104,16 +102,15 @@ const LoginForm = () => {
               value={user.password}
               onChange={(e) => setUser({ ...user, password: e.target.value })}
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition"
               required
             />
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
             disabled={disabled || loading}
-            className="w-full flex items-center justify-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center bg-indigo-600 text-white py-2 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? (
               <svg
@@ -141,6 +138,15 @@ const LoginForm = () => {
             )}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-indigo-600 hover:underline font-medium"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </div>
     </div>
   );
