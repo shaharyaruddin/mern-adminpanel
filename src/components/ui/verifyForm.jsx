@@ -7,10 +7,20 @@ import React, { useEffect, useState } from "react";
 const VerifyForm = () => {
   const router = useRouter();
   const [disabled, setDisabled] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(59);
   const [email, setEmail] = useState("");
   const [user, setUser] = useState({
     verificationCode: "",
   });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    // cleanup function
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (user.verificationCode) {
@@ -24,7 +34,7 @@ const VerifyForm = () => {
     const storedEmail = localStorage.getItem("emailForVerification");
     if (storedEmail) {
       setEmail(storedEmail);
-      console.log("stored email: ", storedEmail);
+      // console.log("stored email: ", storedEmail);
     }
   }, []);
 
@@ -36,7 +46,7 @@ const VerifyForm = () => {
         code: user.verificationCode,
         email: email,
       });
-      console.log("verify response: ", res);
+      // console.log("verify response: ", res);
       alert("verified");
 
       router.push("/login");
@@ -79,14 +89,30 @@ const VerifyForm = () => {
             />
           </div>
 
+          <div className="text-sm text-gray-600 mt-2 flex items-center justify-between">
+            <span>Time remaining:</span>
+            <span className="font-semibold text-red-500">
+              00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+            </span>
+          </div>
+
           {/* Verify Button */}
-          <button
-            type="submit"
-            disabled={disabled}
-            className=" w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
-          >
-            Verify account
-          </button>
+          {timeLeft > 0 ? (
+            <button
+              type="submit"
+              disabled={disabled}
+              className=" w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
+            >
+              Verify account
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className=" w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
+            >
+              Resend OTP
+            </button>
+          )}
         </form>
 
         {/* Extra */}
