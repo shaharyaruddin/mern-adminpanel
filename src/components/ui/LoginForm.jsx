@@ -4,47 +4,34 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-const SignupForm = () => {
+const LoginForm = () => {
   const router = useRouter();
 
   const [user, setUser] = useState({
-    username: "",
     email: "",
     password: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (user.email && user.password && user.username) {
+    if (user.email && user.password) {
       setDisabled(false);
     } else {
       setDisabled(true);
     }
   }, [user]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleSubmit = async () => {
     try {
-      const res = await axios.post(`http://localhost:1000/auth/signup`, user);
-      if (res.status == 200 || res.status == 201) {
-        localStorage.setItem("emailForVerification", user.email); 
+      setLoading(true);
+      const res = await axios.post(`http://localhost:1000/auth/login`, user);
+      console.log("login response: ", res);
 
-        router.push("/verify");
-      }
+      router.push("/");
     } catch (error) {
-      console.error("error in signup form ", error);
-      if (error?.response?.status == 403) {
-        setError("user already exist");
-      } else {
-        setError("Something went wrong, please try again");
-      }
-    } finally {
-      setLoading(false);
+      console.error("error in login form ", error);
     }
   };
 
@@ -56,34 +43,11 @@ const SignupForm = () => {
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
           {/* Heading */}
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-            Create an Account
+            Login an Account
           </h2>
 
           {/* Form */}
           <form className="space-y-5" onSubmit={handleSubmit}>
-            {/*  error message */}
-            <div>
-              {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
-            </div>
-
-            {/* Username */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                onChange={(e) => setUser({ ...user, username: e.target.value })}
-                value={user.username}
-                placeholder="Enter your username"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
-
             {/* Email */}
             <div>
               <label
@@ -126,21 +90,13 @@ const SignupForm = () => {
               disabled={disabled}
               className=" w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
             >
-              Sign Up
+              Login
             </button>
           </form>
-
-          {/* Extra */}
-          <p className="text-sm text-gray-600 text-center mt-6">
-            Already have an account?{" "}
-            <a href="/login" className="text-indigo-600 hover:underline">
-              Login
-            </a>
-          </p>
         </div>
       )}
     </div>
   );
 };
 
-export default SignupForm;
+export default LoginForm;
