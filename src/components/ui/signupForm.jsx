@@ -32,9 +32,7 @@ const SignupForm = () => {
     try {
       const res = await axios.post(`http://localhost:1000/auth/signup`, user);
       if (res.status == 200 || res.status == 201) {
-        localStorage.setItem("emailForVerification", user.email); 
-
-        router.push("/verify");
+        router.push(`/verify?email=${encodeURIComponent(user.email)}&type=signup`);
       }
     } catch (error) {
       console.error("error in signup form ", error);

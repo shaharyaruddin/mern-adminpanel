@@ -1,17 +1,32 @@
 "use client";
 
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const VerifyForm = () => {
   const router = useRouter();
   const [disabled, setDisabled] = useState(true);
   const [timeLeft, setTimeLeft] = useState(59);
-  const [email, setEmail] = useState("");
   const [user, setUser] = useState({
     verificationCode: "",
   });
+
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email"); // yahan se email mil jayegi
+
+  const type = searchParams.get("type");
+
+  useEffect(() => {
+    console.log("email:", email);
+    console.log("type:", type);
+  }, [email, type]);
+
+  useEffect(() => {
+    if (!email) {
+      router.push("/signup"); // ya error dikhao
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -30,14 +45,6 @@ const VerifyForm = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    const storedEmail = localStorage.getItem("emailForVerification");
-    if (storedEmail) {
-      setEmail(storedEmail);
-      // console.log("stored email: ", storedEmail);
-    }
-  }, []);
-
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
@@ -47,9 +54,12 @@ const VerifyForm = () => {
         email: email,
       });
       // console.log("verify response: ", res);
-      alert("verified");
 
-      router.push("/login");
+      if (type == "forgot") {
+        router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+      } else {
+        router.push("/login");
+      }
     } catch (error) {
       console.error("error in verification form ", error);
     }

@@ -1,12 +1,15 @@
 "use client";
 
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const ForgotForm = () => {
   const [disabled, setDisabled] = useState(true);
   const router = useRouter();
+
+
+
 
   const [user, setUser] = useState({
     email: "",
@@ -31,7 +34,7 @@ const ForgotForm = () => {
       // console.log("forgot res: ", res);
 
       if (res?.status == 200 || res?.status == 201) {
-        router.push("/verify");
+        router.push(`/verify?email=${encodeURIComponent(user.email)}&type=forgot`);
       }
     } catch (error) {
       console.error("error in forgot password", error);
