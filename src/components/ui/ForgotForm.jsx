@@ -1,48 +1,58 @@
 "use client";
 
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const ForgotForm = () => {
   const [disabled, setDisabled] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
-
-
-
 
   const [user, setUser] = useState({
     email: "",
   });
-  {
-    useEffect(() => {
-      if (user.email) {
-        setDisabled(false);
-      } else {
-        setDisabled(true);
-      }
-    }, [user]);
-  }
+
+  useEffect(() => {
+    if (user.email) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
-    try {
-      e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
+    try {
       const res = await axios.post("http://localhost:1000/auth/forgot", {
         email: user.email,
       });
-      // console.log("forgot res: ", res);
 
-      if (res?.status == 200 || res?.status == 201) {
-        router.push(`/verify?email=${encodeURIComponent(user.email)}&type=forgot`);
+      if (res?.status === 200 || res?.status === 201) {
+        // redirect to verify
+        router.push(
+          `/verify?email=${encodeURIComponent(user.email)}&type=forgot`
+        );
       }
     } catch (error) {
       console.error("error in forgot password", error);
+
+      if (error.response?.status === 404) {
+        setError("This email does not exist in our system.");
+      } else {
+        setError("Something went wrong. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         {/* Heading */}
         <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
@@ -52,9 +62,14 @@ const ForgotForm = () => {
           Enter your email and we’ll send you a link to reset your password.
         </p>
 
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-100 border border-red-300 rounded-lg p-2 text-center">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
-          {/* Email */}
           <div>
             <label
               htmlFor="email"
@@ -73,17 +88,19 @@ const ForgotForm = () => {
             />
           </div>
 
-          {/* Reset Button */}
           <button
             type="submit"
-            disabled={disabled}
-            className=" w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
+            disabled={disabled || loading}
+            className="w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center justify-center"
           >
-            Reset Password
+            {loading ? (
+              <span className="loader border-2 border-white border-t-transparent rounded-full w-5 h-5 animate-spin"></span>
+            ) : (
+              "Reset Password"
+            )}
           </button>
         </form>
 
-        {/* Back to login */}
         <div className="mt-6 text-center">
           <a
             href="/login"

@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -34,8 +35,15 @@ const LoginForm = () => {
       const res = await axios.post(`http://localhost:1000/auth/login`, user);
 
       if (res?.status === 200 || res?.status === 201) {
-        console.log("login response: ", res.data);
-        router.push("/");
+        const token = res?.data?.jwtToken;
+        console.log('token: ', token)
+        Cookies.set("token", token, {
+          expires: 7,
+          secure: true,
+        });
+
+        // console.log("login response: ", res.data);
+        // router.push("/");
       }
     } catch (err) {
       console.error("error in login form ", err);

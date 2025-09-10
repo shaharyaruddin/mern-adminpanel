@@ -13,7 +13,7 @@ const VerifyForm = () => {
   });
 
   const searchParams = useSearchParams();
-  const email = searchParams.get("email"); // yahan se email mil jayegi
+  const email = searchParams.get("email");
 
   const type = searchParams.get("type");
 
