@@ -1,8 +1,43 @@
 "use client";
 
-import React from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const ForgotForm = () => {
+  const [disabled, setDisabled] = useState(true);
+  const router = useRouter();
+
+  const [user, setUser] = useState({
+    email: "",
+  });
+  {
+    useEffect(() => {
+      if (user.email) {
+        setDisabled(false);
+      } else {
+        setDisabled(true);
+      }
+    }, [user]);
+  }
+
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+
+      const res = await axios.post("http://localhost:1000/auth/forgot", {
+        email: user.email,
+      });
+      // console.log("forgot res: ", res);
+
+      if (res?.status == 200 || res?.status == 201) {
+        router.push("/verify");
+      }
+    } catch (error) {
+      console.error("error in forgot password", error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
@@ -15,7 +50,7 @@ const ForgotForm = () => {
         </p>
 
         {/* Form */}
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Email */}
           <div>
             <label
@@ -26,6 +61,8 @@ const ForgotForm = () => {
             </label>
             <input
               type="email"
+              value={user.email}
+              onChange={(e) => setUser({ ...user, email: e.target.value })}
               id="email"
               placeholder="Enter your email"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition"
@@ -36,9 +73,10 @@ const ForgotForm = () => {
           {/* Reset Button */}
           <button
             type="submit"
-            className="w-full flex items-center justify-center bg-indigo-600 text-white py-2 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-300"
+            disabled={disabled}
+            className=" w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
           >
-            Send Reset Link
+            Reset Password
           </button>
         </form>
 
